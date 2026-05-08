@@ -15,6 +15,7 @@ jobs:
           username: twistedp
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            sleep 5
             cd /tmp
             rm -rf twisted-media-web-main site.zip
             curl -sL https://github.com/salvador-oss/twisted-media-web/archive/refs/heads/main.zip -o site.zip
