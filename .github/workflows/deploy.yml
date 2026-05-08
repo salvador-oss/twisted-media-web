@@ -8,22 +8,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Esperar sincronizacion GitHub
-        run: sleep 10
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-      - name: Update from Remote en cPanel
-        run: |
-          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControl/update" \
-            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
-            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
-            --insecure
-
-      - name: Esperar pull
-        run: sleep 8
-
-      - name: Deploy HEAD Commit
-        run: |
-          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControlDeployment/create" \
-            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
-            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
-            --insecure
+      - name: Deploy via SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          username: twistedp
+          server: mx126.hostgator.mx
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          local_path: './'
+          remote_path: '/home3/twistedp/public_html'
+          delete_remote_files: false
+          args: '-o StrictHostKeyChecking=no'
