@@ -8,7 +8,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger cPanel Git Deployment
+      - name: Update from Remote (git pull en cPanel)
+        run: |
+          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControl/update" \
+            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
+            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
+            --insecure
+
+      - name: Esperar sync
+        run: sleep 5
+
+      - name: Deploy HEAD Commit (copia a public_html)
         run: |
           curl -s "https://mx126.hostgator.mx:2083/execute/VersionControlDeployment/create" \
             -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
