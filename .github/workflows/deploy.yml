@@ -1,0 +1,16 @@
+name: Deploy a cPanel
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger cPanel Git Deployment
+        run: |
+          curl -s "https://twistedmedia.com.mx:2083/execute/VersionControlDeployment/create" \
+            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
+            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
+            --insecure
