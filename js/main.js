@@ -41,10 +41,13 @@ setTimeout(()=>{if(!hackDone){hackDone=true;cur.style.display='none';document.ge
     document.body.style.overflow='hidden';
   }
   function closeMobile(){
+    nav.classList.add('closing');
     hbg.classList.remove('open');
     hbg.setAttribute('aria-expanded','false');
-    nav.classList.remove('open');
-    document.body.style.overflow='';
+    setTimeout(function(){
+      nav.classList.remove('open','closing');
+      document.body.style.overflow='';
+    }, 300);
   }
   window.closeMobile = closeMobile;
 
@@ -63,8 +66,7 @@ setTimeout(()=>{if(!hackDone){hackDone=true;cur.style.display='none';document.ge
       e.stopPropagation();
       var page = btn.getAttribute('data-page');
       closeMobile();
-      // small delay so menu closes before page switches
-      setTimeout(function(){ goPage(page); }, 80);
+      setTimeout(function(){ goPage(page); }, 320);
     });
   });
 

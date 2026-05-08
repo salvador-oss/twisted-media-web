@@ -82,29 +82,193 @@ nav{position:fixed;top:0;left:0;right:0;z-index:8000;display:flex;align-items:ce
 .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
 .hamburger.open span:nth-child(2){opacity:0;}
 .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+/* ── MOBILE NAV REDESIGN ── */
 #mobileNav{
   display:none;position:fixed;inset:0;
-  background:rgba(29,29,27,0.97);
-  z-index:8999;/* above nav(8000) but below loader/cursor */
-  flex-direction:column;align-items:center;justify-content:center;gap:40px;
-  -webkit-overflow-scrolling:touch;
+  background:#0A0A0A;
+  z-index:8999;
+  flex-direction:column;
+  overflow:hidden;
 }
-#mobileNav.open{display:flex;}
-#mobileNav button{
+#mobileNav.open{
+  display:flex;
+  animation:mob-reveal .45s cubic-bezier(.16,1,.3,1) forwards;
+}
+#mobileNav.closing{
+  animation:mob-hide .3s cubic-bezier(.4,0,1,1) forwards;
+}
+@keyframes mob-reveal{
+  from{clip-path:inset(0 0 100% 0);}
+  to{clip-path:inset(0 0 0% 0);}
+}
+@keyframes mob-hide{
+  from{clip-path:inset(0 0 0% 0);opacity:1;}
+  to{clip-path:inset(0 0 100% 0);opacity:0;}
+}
+.mob-scanlines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,0,0,0.18) 3px,rgba(0,0,0,0.18) 4px);
+  pointer-events:none;z-index:1;
+}
+/* Top bar */
+.mob-topbar{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;
+  border-bottom:1px solid rgba(69,180,143,0.2);
+  flex-shrink:0;
+}
+.mob-signal-wrap{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  letter-spacing:4px;color:var(--tm-green);
+}
+.mob-rec-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--tm-green);
+  display:inline-block;
+  animation:blink 1s step-end infinite;
+  flex-shrink:0;
+}
+.mob-close{
+  position:relative;width:36px;height:36px;
+  background:none;border:1px solid rgba(69,180,143,0.3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;
+  transition:border-color .2s;
+}
+.mob-close:active{border-color:var(--tm-green);}
+.mob-close span{
+  position:absolute;width:16px;height:1.5px;
+  background:var(--tm-white);display:block;
+}
+.mob-close span:first-child{transform:rotate(45deg);}
+.mob-close span:last-child{transform:rotate(-45deg);}
+/* Nav container */
+.mob-nav{
+  position:relative;z-index:10;
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:0 24px;overflow-y:auto;
+}
+/* Staggered item entrance */
+@keyframes mob-item-in{
+  from{opacity:0;transform:translateX(-24px);}
+  to{opacity:1;transform:translateX(0);}
+}
+.mob-item{opacity:0;}
+#mobileNav.open .mob-item:nth-child(1){animation:mob-item-in .4s cubic-bezier(.16,1,.3,1) .18s forwards;}
+#mobileNav.open .mob-item:nth-child(2){animation:mob-item-in .4s cubic-bezier(.16,1,.3,1) .25s forwards;}
+#mobileNav.open .mob-item:nth-child(3){animation:mob-item-in .4s cubic-bezier(.16,1,.3,1) .32s forwards;}
+#mobileNav.open .mob-item:nth-child(5){animation:mob-item-in .4s cubic-bezier(.16,1,.3,1) .39s forwards;}
+#mobileNav.open .mob-item:nth-child(6){animation:mob-item-in .4s cubic-bezier(.16,1,.3,1) .46s forwards;}
+/* Nav items */
+.mob-link,.mob-srv-toggle{
   background:none;border:none;cursor:pointer;
-  font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,10vw,60px);
-  letter-spacing:8px;color:var(--tm-white);transition:color .2s;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0;width:100%;text-align:left;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:padding-left .2s cubic-bezier(.16,1,.3,1);
+}
+.mob-link::before,.mob-srv-toggle::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--tm-green);
+  transform:scaleY(0);transform-origin:bottom;
+  transition:transform .25s cubic-bezier(.16,1,.3,1);
+}
+.mob-link:active::before,.mob-link:hover::before,
+.mob-srv-toggle:active::before,.mob-srv-toggle:hover::before,
+.mob-srv-toggle[aria-expanded="true"]::before{transform:scaleY(1);}
+.mob-link:active,.mob-link:hover,
+.mob-srv-toggle:active,.mob-srv-toggle:hover{padding-left:10px;}
+.mob-num{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  letter-spacing:2px;color:var(--tm-green);
+  min-width:26px;flex-shrink:0;
+}
+.mob-label{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(30px,8.5vw,46px);
+  letter-spacing:4px;color:var(--tm-white);
+  flex:1;line-height:1;transition:color .2s;
+}
+.mob-link:hover .mob-label,.mob-link:active .mob-label,
+.mob-srv-toggle:hover .mob-label,.mob-srv-toggle:active .mob-label,
+.mob-srv-toggle[aria-expanded="true"] .mob-label{color:var(--tm-green);}
+.mob-arrow{
+  font-family:'Share Tech Mono',monospace;font-size:14px;
+  color:rgba(255,255,255,0.15);flex-shrink:0;
+  transition:color .2s,transform .2s;
+}
+.mob-link:hover .mob-arrow,.mob-link:active .mob-arrow{
+  color:var(--tm-green);transform:translateX(5px);
+}
+.mob-arr{
+  font-size:14px;color:rgba(255,255,255,0.3);flex-shrink:0;
+  display:inline-block;
+  transition:transform .3s cubic-bezier(.4,0,.2,1),color .2s;
+}
+.mob-srv-toggle[aria-expanded="true"] .mob-arr{transform:rotate(180deg);color:var(--tm-green);}
+/* Services submenu */
+.mob-srv-list{
+  display:flex;flex-direction:column;
+  max-height:0;overflow:hidden;
+  transition:max-height .4s cubic-bezier(.16,1,.3,1);
+  padding-left:40px;
+}
+.mob-srv-list.open{max-height:300px;}
+.mob-srv-item{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  letter-spacing:2px;color:rgba(255,255,255,0.32);
+  padding:9px 0;text-decoration:none;text-transform:uppercase;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  display:flex;align-items:center;gap:10px;
+  transition:color .2s,padding-left .15s;
   -webkit-tap-highlight-color:transparent;
-  padding:8px 20px;
-  touch-action:manipulation;
 }
-#mobileNav button:hover,#mobileNav button:active{color:var(--tm-green);}
-#mobileNav .mob-close{
-  position:absolute;top:20px;right:24px;
-  font-family:'Share Tech Mono',monospace;font-size:22px;
-  color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;
-  padding:8px;letter-spacing:0;font-size:28px;
+.mob-srv-item:hover,.mob-srv-item:active{color:var(--tm-green);padding-left:6px;}
+.srv-dot{
+  width:4px;height:4px;border-radius:50%;
+  background:var(--tm-green);opacity:.5;flex-shrink:0;
 }
+/* Footer */
+.mob-footer{
+  position:relative;z-index:10;
+  padding:18px 24px 28px;
+  border-top:1px solid rgba(69,180,143,0.15);
+  display:flex;flex-direction:column;gap:14px;
+  flex-shrink:0;opacity:0;
+}
+#mobileNav.open .mob-footer{animation:mob-item-in .4s cubic-bezier(.16,1,.3,1) .52s forwards;}
+.mob-tagline{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:2px;color:rgba(255,255,255,0.22);
+  line-height:1.9;text-transform:uppercase;
+}
+.mob-tagline em{color:var(--tm-green);font-style:normal;}
+.mob-cta-btn{
+  display:inline-flex;align-items:center;
+  background:var(--tm-green);color:#0A0A0A;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:4px;
+  padding:13px 22px;text-decoration:none;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  align-self:flex-start;
+  transition:background .2s,transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-cta-btn:active{transform:scale(.97);background:var(--tm-offwhite);}
+.mob-socials{display:flex;gap:20px;}
+.mob-socials a{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:3px;color:rgba(255,255,255,0.22);
+  text-decoration:none;transition:color .2s;
+}
+.mob-socials a:hover,.mob-socials a:active{color:var(--tm-green);}
+/* Corner brackets */
+.mob-bracket{position:absolute;width:18px;height:18px;z-index:5;}
+.mob-bracket-tl{top:68px;left:8px;border-top:2px solid rgba(69,180,143,0.25);border-left:2px solid rgba(69,180,143,0.25);}
+.mob-bracket-br{bottom:8px;right:8px;border-bottom:2px solid rgba(69,180,143,0.25);border-right:2px solid rgba(69,180,143,0.25);}
 
 /* ── NAV DROPDOWN — Servicios ── */
 .nav-dropdown-wrap{position:relative;}

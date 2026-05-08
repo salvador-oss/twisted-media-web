@@ -141,19 +141,69 @@
 </nav>
 
 <div id="mobileNav" role="dialog" aria-modal="true">
-  <button class="mob-close" id="mobClose" aria-label="Cerrar menú">✕</button>
-  <button class="mob-link" data-page="inicio">Inicio</button>
-  <button class="mob-link" data-page="nosotros">Nosotros</button>
-  <button class="mob-srv-toggle" id="mobSrvToggle" aria-expanded="false">Servicios <span class="mob-arr">▾</span></button>
-  <div class="mob-srv-list" id="mobSrvList">
-    <a class="mob-srv-item" href="#" onclick="openService('produccion-av');closeMobile();return false;">01 · Producción Audiovisual</a>
-    <a class="mob-srv-item" href="#" onclick="openService('redes-sociales');closeMobile();return false;">02 · Manejo de R.R.S.S.</a>
-    <a class="mob-srv-item" href="#" onclick="openService('branding');closeMobile();return false;">03 · Branding</a>
-    <a class="mob-srv-item" href="#" onclick="openService('transmisiones');closeMobile();return false;">04 · Transmisiones en Vivo</a>
-    <a class="mob-srv-item" href="#" onclick="openService('desarrollo-web');closeMobile();return false;">05 · Desarrollo Web</a>
-    <a class="mob-srv-item" href="#" onclick="openService('cobertura-eventos');closeMobile();return false;">06 · Cobertura de Eventos</a>
+  <div class="mob-scanlines"></div>
+
+  <!-- Top bar -->
+  <div class="mob-topbar">
+    <div class="mob-signal-wrap">
+      <span class="mob-rec-dot"></span>
+      <span class="mob-signal-txt">TWISTED&nbsp;MEDIA</span>
+    </div>
+    <button class="mob-close" id="mobClose" aria-label="Cerrar menú">
+      <span></span><span></span>
+    </button>
   </div>
-  <button class="mob-link" data-page="contacto">Contacto</button>
+
+  <!-- Nav items -->
+  <div class="mob-nav">
+    <button class="mob-link mob-item" data-page="inicio">
+      <span class="mob-num">01</span>
+      <span class="mob-label">Inicio</span>
+      <span class="mob-arrow">→</span>
+    </button>
+    <button class="mob-link mob-item" data-page="nosotros">
+      <span class="mob-num">02</span>
+      <span class="mob-label">Nosotros</span>
+      <span class="mob-arrow">→</span>
+    </button>
+    <button class="mob-srv-toggle mob-item" id="mobSrvToggle" aria-expanded="false">
+      <span class="mob-num">03</span>
+      <span class="mob-label">Servicios</span>
+      <span class="mob-arr">▾</span>
+    </button>
+    <div class="mob-srv-list" id="mobSrvList">
+      <a class="mob-srv-item" href="#" onclick="openService('produccion-av');closeMobile();return false;"><span class="srv-dot"></span>Producción Audiovisual</a>
+      <a class="mob-srv-item" href="#" onclick="openService('redes-sociales');closeMobile();return false;"><span class="srv-dot"></span>Manejo de R.R.S.S.</a>
+      <a class="mob-srv-item" href="#" onclick="openService('branding');closeMobile();return false;"><span class="srv-dot"></span>Branding</a>
+      <a class="mob-srv-item" href="#" onclick="openService('transmisiones');closeMobile();return false;"><span class="srv-dot"></span>Transmisiones en Vivo</a>
+      <a class="mob-srv-item" href="#" onclick="openService('desarrollo-web');closeMobile();return false;"><span class="srv-dot"></span>Desarrollo Web</a>
+      <a class="mob-srv-item" href="#" onclick="openService('cobertura-eventos');closeMobile();return false;"><span class="srv-dot"></span>Cobertura de Eventos</a>
+    </div>
+    <button class="mob-link mob-item" data-page="proyectos">
+      <span class="mob-num">04</span>
+      <span class="mob-label">Proyectos</span>
+      <span class="mob-arrow">→</span>
+    </button>
+    <button class="mob-link mob-item" data-page="contacto">
+      <span class="mob-num">05</span>
+      <span class="mob-label">Contacto</span>
+      <span class="mob-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <div class="mob-footer">
+    <p class="mob-tagline">No somos una agencia.<br>Somos una <em>legión de marcas</em>.</p>
+    <a class="mob-cta-btn" href="#" onclick="goPage('contacto');closeMobile();return false;">INICIAR PROYECTO →</a>
+    <div class="mob-socials">
+      <a href="https://www.instagram.com/twistedmedia_mrl/" target="_blank" rel="noopener">IG</a>
+      <a href="https://www.facebook.com/profile.php?id=100087006316133" target="_blank" rel="noopener">FB</a>
+      <a href="https://www.tiktok.com/@twistedproductionsmrl" target="_blank" rel="noopener">TK</a>
+    </div>
+  </div>
+
+  <div class="mob-bracket mob-bracket-tl"></div>
+  <div class="mob-bracket mob-bracket-br"></div>
 </div>
 
 <!-- PAGE: INICIO -->
