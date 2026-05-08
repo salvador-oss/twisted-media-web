@@ -8,19 +8,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Update from Remote (git pull en cPanel)
-        run: |
-          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControl/update" \
-            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
-            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
-            --insecure
-
-      - name: Esperar sync
-        run: sleep 5
-
-      - name: Deploy HEAD Commit (copia a public_html)
-        run: |
-          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControlDeployment/create" \
-            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
-            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
-            --insecure
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: mx126.hostgator.mx
+          username: twistedp
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home3/twistedp/twisted-media-web
+            git fetch --all
+            git reset --hard origin/main
+            cp -rf /home3/twistedp/twisted-media-web/. /home3/twistedp/public_html/
+            echo "Deploy completado OK"
