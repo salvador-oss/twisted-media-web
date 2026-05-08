@@ -19,7 +19,11 @@ jobs:
             cd /tmp
             rm -rf twisted-media-web-main site.zip
             curl -sL https://github.com/salvador-oss/twisted-media-web/archive/refs/heads/main.zip -o site.zip
+            echo "ZIP descargado: $(ls -lh site.zip)"
             unzip -qo site.zip
+            echo "Archivos extraidos: $(ls twisted-media-web-main/)"
             cp -rf twisted-media-web-main/. /home3/twistedp/public_html/
+            echo "index.html en public_html: $(ls -lh /home3/twistedp/public_html/index.html)"
+            echo "favicon en public_html: $(ls -lh /home3/twistedp/public_html/favicon.png 2>/dev/null || echo 'NO EXISTE')"
             rm -rf twisted-media-web-main site.zip
             echo "Deploy completado OK"
