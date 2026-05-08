@@ -8,22 +8,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: mx126.hostgator.mx
-          username: twistedp
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sleep 5
-            cd /tmp
-            rm -rf twisted-media-web-main site.zip
-            curl -sL https://github.com/salvador-oss/twisted-media-web/archive/refs/heads/main.zip -o site.zip
-            echo "ZIP descargado: $(ls -lh site.zip)"
-            unzip -qo site.zip
-            echo "Archivos extraidos: $(ls twisted-media-web-main/)"
-            cp -rf twisted-media-web-main/. /home3/twistedp/public_html/
-            echo "index.html en public_html: $(ls -lh /home3/twistedp/public_html/index.html)"
-            echo "favicon en public_html: $(ls -lh /home3/twistedp/public_html/favicon.png 2>/dev/null || echo 'NO EXISTE')"
-            rm -rf twisted-media-web-main site.zip
-            echo "Deploy completado OK"
+      - name: Esperar sincronizacion GitHub
+        run: sleep 10
+
+      - name: Update from Remote en cPanel
+        run: |
+          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControl/update" \
+            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
+            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
+            --insecure
+
+      - name: Esperar pull
+        run: sleep 8
+
+      - name: Deploy HEAD Commit
+        run: |
+          curl -s "https://mx126.hostgator.mx:2083/execute/VersionControlDeployment/create" \
+            -H "Authorization: cpanel twistedp:${{ secrets.CPANEL_API_TOKEN }}" \
+            --data-urlencode "repository=/home3/twistedp/twisted-media-web" \
+            --insecure
