@@ -1,5 +1,4 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home3/twistedp/public_html/
-    - /bin/cp -rf . $DEPLOYPATH
+    - /bin/cp -rf /home3/twistedp/twisted-media-web/. /home3/twistedp/public_html/
