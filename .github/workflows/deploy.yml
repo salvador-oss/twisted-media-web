@@ -11,13 +11,12 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Deploy via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.7
         with:
+          host: mx126.hostgator.mx
           username: twistedp
-          server: mx126.hostgator.mx
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          local_path: './'
-          remote_path: '/home3/twistedp/public_html'
-          delete_remote_files: false
-          args: '-o StrictHostKeyChecking=no'
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./"
+          target: "/home3/twistedp/public_html"
+          rm: false
