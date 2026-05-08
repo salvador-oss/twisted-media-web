@@ -8,15 +8,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Deploy via rsync SSH
+        uses: burnett01/rsync-deployments@7.0.1
         with:
-          host: mx126.hostgator.mx
-          username: twistedp
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home3/twistedp/twisted-media-web
-            git fetch --all
-            git reset --hard origin/main
-            cp -rf /home3/twistedp/twisted-media-web/. /home3/twistedp/public_html/
-            echo "Deploy completado OK"
+          switches: -avzr --delete --exclude='.git' --exclude='.github' --exclude='.cpanel.yml' --exclude='deploy.sh'
+          path: ./
+          remote_path: /home3/twistedp/public_html/
+          remote_host: mx126.hostgator.mx
+          remote_user: twistedp
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
