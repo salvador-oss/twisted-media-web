@@ -1,6 +1,0 @@
----
-deployment:
-  tasks:
-    - /usr/bin/git -C /home3/twistedp/twisted-media-web fetch --all
-    - /usr/bin/git -C /home3/twistedp/twisted-media-web reset --hard origin/main
-    - /bin/cp -rf /home3/twistedp/twisted-media-web/. /home3/twistedp/public_html/
