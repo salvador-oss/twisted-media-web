@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Clientes · Twisted Media</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── VARIABLES ── */
+    :root {
+      --tm-green:    #45B48F;
+      --tm-teal:     #02634D;
+      --tm-dark:     #051A1B;
+      --tm-black:    #1D1D1B;
+      --tm-offwhite: #F2F6F5;
+      --tm-white:    #FFFFFF;
+      --red:         #ff2244;
+      --border:      rgba(69,180,143,0.18);
+      --topbar-h:    64px;
+      --footer-h:    38px;
+    }
+
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+      height: 100%;
+      background: var(--tm-black);
+      color: var(--tm-white);
+      font-family: 'Space Mono', monospace;
+      overflow: hidden;
+    }
+
+    /* ── SCANLINES ── */
+    .scanlines {
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,0.10) 3px, rgba(0,0,0,0.10) 4px
+      );
+      pointer-events: none;
+      z-index: 9000;
+    }
+
+    /* ════════════════════════════════════════════
+       LOGIN VIEW
+    ════════════════════════════════════════════ */
+    #loginView {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 24px;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 50%, rgba(2,99,77,0.12) 0%, transparent 70%),
+        var(--tm-black);
+      animation: login-fadein .5s ease forwards;
+    }
+
+    @keyframes login-fadein {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0);    }
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--tm-dark);
+      border: 1px solid var(--border);
+      padding: 48px 44px 40px;
+      position: relative;
+      box-shadow: 0 0 80px rgba(69,180,143,0.08), 0 40px 80px rgba(0,0,0,0.5);
+    }
+
+    /* corner brackets */
+    .login-card::before,
+    .login-card::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-color: var(--tm-green);
+      border-style: solid;
+    }
+    .login-card::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+    .login-card::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+
+    .login-top-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: rgba(255,255,255,0.25);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .login-logo {
+      width: 120px;
+      height: auto;
+      display: block;
+      cursor: pointer;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 0 14px rgba(69,180,143,0.35));
+    }
+
+    .login-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .blink-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--tm-green);
+      box-shadow: 0 0 8px var(--tm-green);
+      animation: blink-pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes blink-pulse {
+      0%,100% { opacity:1; }
+      50%      { opacity:0.3; }
+    }
+
+    .login-status-txt {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--tm-green);
+    }
+
+    .login-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 8vw, 50px);
+      line-height: .9;
+      letter-spacing: 3px;
+      color: var(--tm-white);
+      margin-bottom: 12px;
+    }
+
+    .login-title em {
+      font-style: normal;
+      color: var(--tm-green);
+    }
+
+    .login-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    /* input */
+    .input-wrap { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+
+    .input-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--tm-green);
+    }
+
+    #codeInput {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--tm-white);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 18px;
+      letter-spacing: 6px;
+      padding: 14px 18px;
+      outline: none;
+      width: 100%;
+      text-transform: uppercase;
+      transition: border-color .2s, background .2s;
+      caret-color: var(--tm-green);
+    }
+
+    #codeInput::placeholder { color: rgba(255,255,255,0.15); letter-spacing: 4px; }
+    #codeInput:focus { border-color: var(--tm-green); background: rgba(69,180,143,0.05); }
+
+    /* error */
+    .login-error {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--red);
+      min-height: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* submit button */
+    .login-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: var(--tm-green);
+      color: var(--tm-black);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 5px;
+      padding: 15px 24px;
+      border: none;
+      cursor: pointer;
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+      transition: background .2s, transform .1s;
+      margin-bottom: 24px;
+    }
+
+    .login-btn svg { width: 20px; height: 20px; }
+    .login-btn:hover  { background: var(--tm-offwhite); }
+    .login-btn:active { transform: translateY(1px); }
+
+    .login-help {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+    }
+
+    .login-help a {
+      color: var(--tm-green);
+      text-decoration: none;
+    }
+
+    .login-help a:hover { text-decoration: underline; }
+
+    /* ════════════════════════════════════════════
+       DASHBOARD VIEW
+    ════════════════════════════════════════════ */
+    #dashView {
+      display: none;
+      flex-direction: column;
+      height: 100dvh;
+    }
+
+    /* ── TOP BAR ── */
+    .dash-topbar {
+      height: var(--topbar-h);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 28px;
+      background: rgba(5,26,27,0.97);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+
+    .dash-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .dash-logo {
+      height: 32px;
+      width: auto;
+      filter: drop-shadow(0 0 8px rgba(69,180,143,0.3));
+      cursor: pointer;
+    }
+
+    .dash-divider {
+      color: var(--border);
+      font-size: 22px;
+      font-weight: 100;
+    }
+
+    .dash-client-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .dash-client-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .dash-client-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 3px;
+      color: var(--tm-white);
+      line-height: 1;
+    }
+
+    /* ── PLATFORM TABS ── */
+    .dash-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      justify-content: center;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .dash-tabs::-webkit-scrollbar { display: none; }
+
+    .dash-tab {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.35);
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 8px 18px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s, background .2s;
+      white-space: nowrap;
+    }
+
+    .dash-tab:hover {
+      color: var(--tm-white);
+      border-color: var(--border);
+    }
+
+    .dash-tab.active {
+      color: var(--tm-green);
+      border-color: var(--tm-green);
+      background: rgba(69,180,143,0.07);
+    }
+
+    /* ── LOGOUT ── */
+    .dash-logout {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: rgba(255,255,255,0.35);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+
+    .dash-logout svg { width: 14px; height: 14px; }
+    .dash-logout:hover { color: var(--red); border-color: var(--red); }
+
+    /* ── BODY ── */
+    .dash-body {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dash-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ── EMPTY STATE ── */
+    .dash-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      height: 100%;
+      padding: 40px;
+    }
+
+    .empty-icon {
+      width: 64px; height: 64px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--tm-green);
+      opacity: .5;
+    }
+
+    .empty-icon svg { width: 28px; height: 28px; }
+
+    .empty-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 5px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .empty-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.2);
+      line-height: 1.9;
+      text-align: center;
+      max-width: 420px;
+    }
+
+    /* ── FOOTER ── */
+    .dash-footer {
+      height: var(--footer-h);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(5,26,27,0.97);
+      border-top: 1px solid var(--border);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.18);
+    }
+
+    /* ════════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .login-card { padding: 36px 24px 32px; }
+      .dash-topbar { padding: 0 16px; gap: 10px; }
+      .dash-client-info { display: none; }
+      .dash-logout span { display: none; }
+      .dash-logout { padding: 8px 10px; }
+      .dash-footer { padding: 0 16px; }
+      .dash-footer span:first-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Scanlines overlay (matches main site) -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       LOGIN VIEW
+  ═══════════════════════════════════════════════ -->
+  <div id="loginView">
+    <div class="login-card">
+
+      <p class="login-top-label">PORTAL CLIENTES · TWISTED MEDIA</p>
+
+      <a href="index.html" aria-label="Ir al inicio"><img src="assets/images/logo.png" alt="Twisted Media" class="login-logo" /></a>
+
+      <div class="login-status">
+        <span class="blink-dot"></span>
+        <span class="login-status-txt">SISTEMA ACTIVO</span>
+      </div>
+
+      <h1 class="login-title">ACCESO<br/><em>RESTRINGIDO</em></h1>
+
+      <p class="login-sub">
+        Ingresa el código de acceso proporcionado<br/>
+        por tu ejecutivo de cuenta.
+      </p>
+
+      <form id="loginForm" autocomplete="off" novalidate>
+        <div class="input-wrap">
+          <label class="input-label" for="codeInput">// CÓDIGO DE CLIENTE</label>
+          <input
+            type="text"
+            id="codeInput"
+            placeholder="TW-XXXXXX"
+            maxlength="12"
+            spellcheck="false"
+            autocomplete="off"
+            aria-label="Código de cliente"
+          />
+        </div>
+        <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
+        <button type="submit" class="login-btn">
+          <span>ACCEDER</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </form>
+
+      <p class="login-help">
+        ¿Sin código? <a href="mailto:hola@twistedproductions.com.mx">Contacta a tu ejecutivo</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       DASHBOARD VIEW
+  ═══════════════════════════════════════════════ -->
+  <div id="dashView">
+
+    <!-- TOP BAR -->
+    <div class="dash-topbar">
+
+      <div class="dash-brand">
+        <a href="index.html" aria-label="Ir al inicio"><img src="assets/images/logo.png" alt="Twisted Media" class="dash-logo" /></a>
+        <span class="dash-divider" aria-hidden="true">|</span>
+        <div class="dash-client-info">
+          <span class="dash-client-label">CLIENTE</span>
+          <span class="dash-client-name" id="dashClientName">--</span>
+        </div>
+      </div>
+
+      <div class="dash-tabs" id="dashTabs" role="tablist" aria-label="Plataformas"></div>
+
+      <button class="dash-logout" id="logoutBtn" aria-label="Cerrar sesión">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>SALIR</span>
+      </button>
+
+    </div>
+
+    <!-- REPORT AREA -->
+    <div class="dash-body">
+
+      <!-- Empty state (shown when no URL configured) -->
+      <div class="dash-empty" id="dashEmpty" role="status">
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+        </div>
+        <p class="empty-title">REPORTE NO DISPONIBLE</p>
+        <p class="empty-sub">
+          El reporte para esta plataforma aún no ha sido asignado.<br/>
+          Contacta a tu ejecutivo para más información.
+        </p>
+      </div>
+
+      <!-- Looker Studio iframe -->
+      <iframe
+        id="dashFrame"
+        class="dash-frame"
+        src="about:blank"
+        title="Reporte de métricas"
+        allowfullscreen
+      ></iframe>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="dash-footer">
+      <span>TWISTED MEDIA · PORTAL DE REPORTES</span>
+      <span id="dashFooterDate"></span>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════════ -->
+  <script>
+    // ─────────────────────────────────────────────────────────────────────
+    // CONFIGURACIÓN DE CLIENTES
+    // Instrucciones:
+    //   1. Abre Looker Studio → tu reporte → Archivo → Insertar informe
+    //   2. Copia el enlace de inserción (embed URL)
+    //   3. Pégalo en el campo correspondiente abajo
+    //   4. Crea tantos clientes como necesites con códigos únicos TW-XXX
+    //   5. Haz deploy del sitio para que los cambios se apliquen
+    // ─────────────────────────────────────────────────────────────────────
+    const CLIENTS = {
+
+      // ── FALGO ──
+      "TW-FALGO": {
+        name: "Multiservicios Falgo",
+        platforms: {
+          facebook: "reporte.html?p=fb"
+        }
+      }
+
+      // ── PLANTILLA PARA NUEVOS CLIENTES ──
+      // "TW-001": {
+      //   name: "Nombre del Cliente",
+      //   platforms: {
+      //     instagram: "https://lookerstudio.google.com/embed/reporting/XXXXXX/page/XXXXXX",
+      //     facebook:  "https://lookerstudio.google.com/embed/reporting/XXXXXX/page/XXXXXX",
+      //     tiktok:    "",
+      //     youtube:   ""
+      //   }
+      // },
+
+    };
+
+    // Etiquetas de plataformas (solo aparecen tabs de plataformas definidas)
+    const PLATFORM_LABELS = {
+      instagram: "INSTAGRAM",
+      facebook:  "FACEBOOK",
+      tiktok:    "TIKTOK",
+      youtube:   "YOUTUBE",
+      linkedin:  "LINKEDIN"
+    };
+
+    // ── DOM ──
+    const loginView      = document.getElementById('loginView');
+    const dashView       = document.getElementById('dashView');
+    const codeInput      = document.getElementById('codeInput');
+    const loginError     = document.getElementById('loginError');
+    const loginForm      = document.getElementById('loginForm');
+    const dashClientName = document.getElementById('dashClientName');
+    const dashTabs       = document.getElementById('dashTabs');
+    const dashFrame      = document.getElementById('dashFrame');
+    const dashEmpty      = document.getElementById('dashEmpty');
+    const logoutBtn      = document.getElementById('logoutBtn');
+
+    let currentClient = null;
+
+    // ── Formatear input mientras escribe ──
+    codeInput.addEventListener('input', function () {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
+      loginError.textContent = '';
+    });
+
+    // ── Submit login ──
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const code = codeInput.value.trim().toUpperCase();
+
+      if (!code) {
+        loginError.textContent = '× Ingresa tu código de cliente';
+        return;
+      }
+
+      if (CLIENTS[code]) {
+        sessionStorage.setItem('tm_portal_code', code);
+        showDashboard(code);
+      } else {
+        loginError.textContent = '× CÓDIGO INVÁLIDO — verifica e intenta de nuevo';
+        codeInput.select();
+        // pequeño shake visual
+        codeInput.animate([
+          { transform: 'translateX(-6px)' },
+          { transform: 'translateX(6px)'  },
+          { transform: 'translateX(-4px)' },
+          { transform: 'translateX(0)'    }
+        ], { duration: 240, easing: 'ease-out' });
+      }
+    });
+
+    // ── Logout ──
+    logoutBtn.addEventListener('click', function () {
+      sessionStorage.removeItem('tm_portal_code');
+      currentClient = null;
+      dashView.style.display   = 'none';
+      loginView.style.display  = 'flex';
+      codeInput.value          = '';
+      loginError.textContent   = '';
+    });
+
+    // ── Mostrar dashboard ──
+    function showDashboard(code) {
+      currentClient = CLIENTS[code];
+
+      dashClientName.textContent = currentClient.name;
+
+      // Construir tabs según plataformas configuradas
+      dashTabs.innerHTML = '';
+      const platforms = Object.keys(currentClient.platforms);
+
+      platforms.forEach(function (platform, i) {
+        const btn = document.createElement('button');
+        btn.className       = 'dash-tab' + (i === 0 ? ' active' : '');
+        btn.textContent     = PLATFORM_LABELS[platform] || platform.toUpperCase();
+        btn.dataset.platform = platform;
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+
+        btn.addEventListener('click', function () {
+          dashTabs.querySelectorAll('.dash-tab').forEach(function (t) {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          this.classList.add('active');
+          this.setAttribute('aria-selected', 'true');
+          loadReport(platform);
+        });
+
+        dashTabs.appendChild(btn);
+      });
+
+      // Fecha en footer
+      var fecha = new Date().toLocaleDateString('es-MX', {
+        month: 'long',
+        year:  'numeric'
+      }).toUpperCase();
+      document.getElementById('dashFooterDate').textContent = fecha;
+
+      loginView.style.display = 'none';
+      dashView.style.display  = 'flex';
+
+      // Cargar primera plataforma
+      if (platforms.length > 0) loadReport(platforms[0]);
+    }
+
+    // ── Cargar reporte ──
+    function loadReport(platform) {
+      var url = (currentClient.platforms[platform] || '').trim();
+
+      if (url) {
+        dashFrame.style.display = 'block';
+        dashEmpty.style.display = 'none';
+        dashFrame.src = url;
+      } else {
+        dashFrame.style.display = 'none';
+        dashEmpty.style.display = 'flex';
+        dashFrame.src = 'about:blank';
+      }
+    }
+
+    // ── Restaurar sesión existente ──
+    (function () {
+      var saved = sessionStorage.getItem('tm_portal_code');
+      if (saved && CLIENTS[saved]) {
+        loginView.style.display = 'none';
+        showDashboard(saved);
+      }
+    })();
+  </script>
+
+</body>
+</html>

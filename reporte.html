@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte · Twisted Media</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --g:   #45B48F;
+      --dk:  #051A1B;
+      --bk:  #111714;
+      --w:   #FFFFFF;
+      --ow:  #F2F6F5;
+      --red: #ff2244;
+      --bd:  rgba(69,180,143,0.15);
+      --txt: rgba(255,255,255,0.45);
+    }
+
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bk);
+      color: var(--w);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      padding: 28px 32px 52px;
+    }
+
+    /* ── SKELETON ── */
+    #loadingState { display: block; }
+    #reportContent { display: none; }
+    #errorState { display: none; }
+
+    .sk {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 2px;
+    }
+
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    .sk-title  { height: 40px; width: 60%; margin-bottom: 10px; }
+    .sk-sub    { height: 14px; width: 30%; margin-bottom: 32px; }
+    .sk-bar    { height: 1px; background: var(--bd); margin-bottom: 28px; }
+    .sk-grid   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .sk-card   { height: 110px; background: rgba(255,255,255,0.03); border: 1px solid var(--bd); }
+    .sk-row    { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; margin-bottom: 24px; }
+    .sk-tall   { height: 180px; background: rgba(255,255,255,0.03); border: 1px solid var(--bd); }
+
+    /* ── ERROR ── */
+    #errorState {
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .err-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:4px; color:rgba(255,255,255,0.3); }
+    .err-sub   { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.2); line-height:1.8; }
+
+    /* ── HEADER ── */
+    .rpt-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rpt-eyebrow {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--g);
+      margin-bottom: 6px;
+    }
+
+    .rpt-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      letter-spacing: 3px;
+      color: var(--w);
+      line-height: 1;
+    }
+
+    .rpt-meta { text-align: right; }
+
+    .rpt-handle {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--g);
+      margin-bottom: 4px;
+    }
+
+    .rpt-location {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.18);
+      margin-bottom: 4px;
+    }
+
+    .rpt-period {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--txt);
+    }
+
+    .rpt-divider { height: 1px; background: var(--bd); margin: 18px 0 28px; }
+
+    /* ── SUMMARY BAR ── */
+    .summary-bar {
+      display: flex;
+      margin-bottom: 24px;
+      border: 1px solid var(--bd);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .summary-bar::-webkit-scrollbar { display: none; }
+
+    .sum-item {
+      flex: 1;
+      min-width: 120px;
+      padding: 14px 18px;
+      border-right: 1px solid var(--bd);
+    }
+
+    .sum-item:last-child { border-right: none; }
+
+    .sum-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--txt);
+      margin-bottom: 8px;
+    }
+
+    .sum-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      letter-spacing: 2px;
+      color: var(--w);
+      line-height: 1;
+    }
+
+    .sum-delta {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .5px;
+      margin-top: 6px;
+    }
+
+    .up   { color: var(--g); }
+    .down { color: var(--red); }
+    .neu  { color: var(--txt); }
+
+    /* ── KPI GRID ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .kpi {
+      background: var(--dk);
+      border: 1px solid var(--bd);
+      padding: 20px 20px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: var(--fill, 60%);
+      height: 2px;
+      background: var(--g);
+      opacity: .4;
+    }
+
+    .kpi-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--txt);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .kpi-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--g);
+      animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+    .kpi-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 52px);
+      letter-spacing: 2px;
+      color: var(--w);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .kpi-delta {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── TWO COL ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 700px) {
+      .two-col { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .sk-grid  { grid-template-columns: repeat(2, 1fr); }
+      .sk-row   { grid-template-columns: 1fr; }
+      body { padding: 18px 16px 48px; }
+    }
+
+    /* ── CARD ── */
+    .card { background: var(--dk); border: 1px solid var(--bd); padding: 24px; }
+
+    .card-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--g);
+      margin-bottom: 20px;
+    }
+
+    /* ── ANÁLISIS ── */
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .insight-card {
+      background: rgba(69,180,143,0.04);
+      border: 1px solid rgba(69,180,143,0.12);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .insight-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--g);
+      background: rgba(69,180,143,0.1);
+      padding: 3px 8px;
+    }
+
+    .insight-score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+    }
+
+    .insight-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .3px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.8;
+    }
+
+    .insight-text strong { color: var(--ow); }
+
+    /* ── BAR CHART ── */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      height: 110px;
+    }
+
+    .bar-col { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+
+    .bar-track {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      height: 82px;
+    }
+
+    .bar-fill {
+      width: 100%;
+      background: var(--g);
+      opacity: .6;
+      border-radius: 2px 2px 0 0;
+      height: 0;
+      transition: height 1.1s cubic-bezier(.16,1,.3,1);
+    }
+
+    .bar-fill.hi { opacity: 1; }
+
+    .bar-tick {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--txt);
+    }
+
+    /* ── DONUT ── */
+    .donut-row { display: flex; align-items: center; gap: 16px; }
+    .donut-legend { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+    .legend-item { display: flex; align-items: center; gap: 9px; }
+
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    .legend-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--txt);
+      flex: 1;
+    }
+
+    .legend-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--w);
+    }
+
+    /* ── POSTS ── */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 520px) { .posts-grid { grid-template-columns: 1fr 1fr; } }
+
+    .post-card { background: rgba(255,255,255,0.03); border: 1px solid var(--bd); }
+
+    .post-rank {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--g);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--bd);
+    }
+
+    .post-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      filter: brightness(.82);
+    }
+
+    .post-stats { padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+
+    .post-stat { display: flex; justify-content: space-between; align-items: center; }
+
+    .post-stat-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--txt);
+    }
+
+    .post-stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: var(--w);
+    }
+
+    /* ── NOTAS ── */
+    .obs-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .obs-item {
+      display: flex;
+      gap: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--bd);
+    }
+
+    .obs-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .obs-num {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--g);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .obs-txt {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: .3px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.85;
+    }
+
+    /* ── FOOTER ── */
+    .rpt-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 32px;
+      padding-top: 18px;
+      border-top: 1px solid var(--bd);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .rpt-footer-brand {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.15);
+    }
+
+    .rpt-footer-links { display: flex; gap: 16px; }
+
+    .rpt-footer-links a {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: rgba(69,180,143,0.35);
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .rpt-footer-links a:hover { color: var(--g); }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOADING ── -->
+  <div id="loadingState">
+    <div class="sk sk-title"></div>
+    <div class="sk sk-sub"></div>
+    <div class="sk-bar"></div>
+    <div class="sk-grid">
+      <div class="sk sk-card"></div>
+      <div class="sk sk-card"></div>
+      <div class="sk sk-card"></div>
+      <div class="sk sk-card"></div>
+    </div>
+    <div class="sk-row">
+      <div class="sk sk-tall"></div>
+      <div class="sk sk-tall"></div>
+    </div>
+  </div>
+
+  <!-- ── ERROR ── -->
+  <div id="errorState">
+    <p class="err-title">REPORTE NO DISPONIBLE</p>
+    <p class="err-sub">No se pudo cargar la información.<br/>Contacta a tu ejecutivo de cuenta.</p>
+  </div>
+
+  <!-- ── REPORT ── -->
+  <div id="reportContent">
+
+    <div class="rpt-header">
+      <div>
+        <p class="rpt-eyebrow" id="rEyebrow">// REPORTE MENSUAL</p>
+        <h1 class="rpt-title" id="rTitle">MULTISERVICIOS<br/>FALGO</h1>
+      </div>
+      <div class="rpt-meta">
+        <p class="rpt-handle" id="rHandle">@multiservicios_falgo</p>
+        <p class="rpt-location">NUEVA ITALIA DE RUIZ, MICH.</p>
+        <p class="rpt-period" id="rPeriod">--</p>
+      </div>
+    </div>
+
+    <div class="rpt-divider"></div>
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <div class="sum-item">
+        <p class="sum-label" id="s1label">SEGUIDORES</p>
+        <p class="sum-val"  id="s1val">--</p>
+        <p class="sum-delta" id="s1delta">--</p>
+      </div>
+      <div class="sum-item">
+        <p class="sum-label" id="s2label">ALCANCE</p>
+        <p class="sum-val"  id="s2val">--</p>
+        <p class="sum-delta" id="s2delta">--</p>
+      </div>
+      <div class="sum-item">
+        <p class="sum-label" id="s3label">IMPRESIONES</p>
+        <p class="sum-val"  id="s3val">--</p>
+        <p class="sum-delta" id="s3delta">--</p>
+      </div>
+      <div class="sum-item">
+        <p class="sum-label" id="s4label">ENGAGEMENT</p>
+        <p class="sum-val"  id="s4val">--</p>
+        <p class="sum-delta" id="s4delta">--</p>
+      </div>
+      <div class="sum-item">
+        <p class="sum-label">PUBLICACIONES</p>
+        <p class="sum-val" id="sPubs">--</p>
+        <p class="sum-delta neu">este mes</p>
+      </div>
+    </div>
+
+    <!-- ANÁLISIS -->
+    <div class="card" style="margin-bottom:22px">
+      <p class="card-label">// ANÁLISIS DEL MES</p>
+      <div class="analysis-grid" id="analysisGrid"></div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi" style="--fill:75%">
+        <div class="kpi-label"><span class="kpi-dot"></span><span id="k1label">INTERACCIONES</span></div>
+        <div class="kpi-value" id="k1val">--</div>
+        <div class="kpi-delta" id="k1delta">--</div>
+      </div>
+      <div class="kpi" style="--fill:60%">
+        <div class="kpi-label"><span class="kpi-dot"></span><span id="k2label">VISITAS AL PERFIL</span></div>
+        <div class="kpi-value" id="k2val">--</div>
+        <div class="kpi-delta" id="k2delta">--</div>
+      </div>
+      <div class="kpi" style="--fill:45%">
+        <div class="kpi-label"><span class="kpi-dot"></span><span id="k3label">CLICS EN BIO</span></div>
+        <div class="kpi-value" id="k3val">--</div>
+        <div class="kpi-delta" id="k3delta">--</div>
+      </div>
+      <div class="kpi" style="--fill:88%">
+        <div class="kpi-label"><span class="kpi-dot"></span><span id="k4label">REPRODUCCIONES</span></div>
+        <div class="kpi-value" id="k4val">--</div>
+        <div class="kpi-delta" id="k4delta">--</div>
+      </div>
+    </div>
+
+    <!-- Chart + Donut -->
+    <div class="two-col">
+      <div class="card">
+        <p class="card-label" id="chartLabel">// ALCANCE SEMANAL</p>
+        <div class="bar-chart">
+          <div class="bar-col">
+            <div class="bar-track"><div class="bar-fill" id="b1"></div></div>
+            <span class="bar-tick">S1</span>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track"><div class="bar-fill" id="b2"></div></div>
+            <span class="bar-tick">S2</span>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track"><div class="bar-fill hi" id="b3"></div></div>
+            <span class="bar-tick">S3</span>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track"><div class="bar-fill" id="b4"></div></div>
+            <span class="bar-tick">S4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-label">// CONTENIDO PUBLICADO</p>
+        <div class="donut-row">
+          <svg id="donutSvg" width="88" height="88" viewBox="0 0 100 100" style="flex-shrink:0">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="15"/>
+            <circle id="donut1" cx="50" cy="50" r="38" fill="none" stroke="#45B48F" stroke-width="15" stroke-linecap="round"/>
+            <circle id="donut2" cx="50" cy="50" r="38" fill="none" stroke="#02634D" stroke-width="15" stroke-linecap="round"/>
+            <circle id="donut3" cx="50" cy="50" r="38" fill="none" stroke="rgba(69,180,143,0.22)" stroke-width="15" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <span class="legend-dot" style="background:#45B48F"></span>
+              <span class="legend-label" id="t1name">--</span>
+              <span class="legend-val" id="t1num">--</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background:#02634D"></span>
+              <span class="legend-label" id="t2name">--</span>
+              <span class="legend-val" id="t2num">--</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background:rgba(69,180,143,0.3)"></span>
+              <span class="legend-label" id="t3name">--</span>
+              <span class="legend-val" id="t3num">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts + Notas -->
+    <div class="two-col">
+      <div class="card">
+        <p class="card-label">// TOP 3 PUBLICACIONES</p>
+        <div class="posts-grid">
+          <div class="post-card">
+            <p class="post-rank">#1 ALCANCE</p>
+            <img class="post-img" src="https://picsum.photos/seed/falgo-a/400/400" alt="Post 1" />
+            <div class="post-stats">
+              <div class="post-stat"><span class="post-stat-label">ALCANCE</span><span class="post-stat-val" id="p1alcance">--</span></div>
+              <div class="post-stat"><span class="post-stat-label">LIKES</span><span class="post-stat-val" id="p1likes">--</span></div>
+              <div class="post-stat"><span class="post-stat-label" id="p1extralabel">REPROD.</span><span class="post-stat-val" id="p1extra">--</span></div>
+            </div>
+          </div>
+          <div class="post-card">
+            <p class="post-rank">#2 ENGAGEMENT</p>
+            <img class="post-img" src="https://picsum.photos/seed/falgo-b/400/400" alt="Post 2" />
+            <div class="post-stats">
+              <div class="post-stat"><span class="post-stat-label">ALCANCE</span><span class="post-stat-val" id="p2alcance">--</span></div>
+              <div class="post-stat"><span class="post-stat-label">LIKES</span><span class="post-stat-val" id="p2likes">--</span></div>
+              <div class="post-stat"><span class="post-stat-label" id="p2extralabel">GUARDADOS</span><span class="post-stat-val" id="p2extra">--</span></div>
+            </div>
+          </div>
+          <div class="post-card">
+            <p class="post-rank">#3 GUARDADOS</p>
+            <img class="post-img" src="https://picsum.photos/seed/falgo-c/400/400" alt="Post 3" />
+            <div class="post-stats">
+              <div class="post-stat"><span class="post-stat-label">ALCANCE</span><span class="post-stat-val" id="p3alcance">--</span></div>
+              <div class="post-stat"><span class="post-stat-label">LIKES</span><span class="post-stat-val" id="p3likes">--</span></div>
+              <div class="post-stat"><span class="post-stat-label" id="p3extralabel">GUARDADOS</span><span class="post-stat-val" id="p3extra">--</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-label">// NOTAS DEL EJECUTIVO</p>
+        <div class="obs-list">
+          <div class="obs-item"><span class="obs-num">01</span><p class="obs-txt" id="nota1">--</p></div>
+          <div class="obs-item"><span class="obs-num">02</span><p class="obs-txt" id="nota2">--</p></div>
+          <div class="obs-item"><span class="obs-num">03</span><p class="obs-txt" id="nota3">--</p></div>
+          <div class="obs-item"><span class="obs-num">04</span><p class="obs-txt" id="nota4">--</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="rpt-footer">
+      <span class="rpt-footer-brand" id="rFooterBrand">TWISTED MEDIA · REPORTE MENSUAL</span>
+      <div class="rpt-footer-links" id="rFooterLinks"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ═════════════════════════════════════════════
+    // DATOS — actualiza aquí cada mes y haz deploy
+    // ═════════════════════════════════════════════
+    var TM_DATOS = {
+
+      "TW-FALGO": {
+
+        ig: {
+          mes: "", seguidores: "", seguidores_delta: "",
+          alcance: "", alcance_delta: "", impresiones: "", impresiones_delta: "",
+          engagement: "", engagement_delta: "", publicaciones: "",
+          interacciones: "", interacciones_delta: "",
+          visitas_perfil: "", visitas_delta: "", clics_bio: "", clics_delta: "",
+          reels_reprod: "", reels_reprod_delta: "",
+          s1: "", s2: "", s3: "", s4: "",
+          tipo1: "REELS", tipo1_num: "", tipo2: "IMAGEN", tipo2_num: "", tipo3: "CARRUSEL", tipo3_num: "",
+          post1_alcance: "", post1_likes: "", post1_extra: "", post1_extra_label: "REPROD.",
+          post2_alcance: "", post2_likes: "", post2_extra: "", post2_extra_label: "GUARDADOS",
+          post3_alcance: "", post3_likes: "", post3_extra: "", post3_extra_label: "GUARDADOS",
+          nota1: "", nota2: "", nota3: "", nota4: ""
+        },
+
+        fb: {
+          mes:                 "Abr–May 2026",
+          seguidores:          "106",
+          seguidores_delta:    "+101 netos (28 días)",
+          alcance:             "25,753",
+          alcance_delta:       "+214.5%",
+          impresiones:         "55,700",
+          impresiones_delta:   "+86.9%",
+          engagement:          "0.37%",
+          engagement_delta:    "+100%",
+          publicaciones:       "8",
+          interacciones:       "94",
+          interacciones_delta: "+100%",
+          visitas_perfil:      "428",
+          visitas_delta:       "+2,300%",
+          clics_bio:           "12",
+          clics_delta:         "+100%",
+          reels_reprod:        "55,700",
+          reels_reprod_delta:  "+86.9%",
+          s1: "85", s2: "42", s3: "70", s4: "231",
+          tipo1: "REEL",   tipo1_num: "2",
+          tipo2: "FOTO",   tipo2_num: "6",
+          tipo3: "TOTAL",  tipo3_num: "8",
+          post1_alcance: "2,612", post1_likes: "2",   post1_extra: "3,176", post1_extra_label: "REPROD.",
+          post2_alcance: "104",   post2_likes: "5",   post2_extra: "105",   post2_extra_label: "ESPECT.",
+          post3_alcance: "102",   post3_likes: "1",   post3_extra: "106",   post3_extra_label: "ESPECT.",
+          nota1: "El Reel promocionado del 7 de mayo dominó el alcance con 2,612 espectadores y 3,176 reproducciones.",
+          nota2: "El 98.8% del alcance proviene de no seguidores — el contenido está atrayendo audiencia nueva.",
+          nota3: "12 contactos directos iniciados en el período — señal de intención de compra activa.",
+          nota4: "Objetivo: aumentar alcance orgánico publicando reels sin pagar — el formato ya demostró funcionar."
+        }
+
+      }
+    };
+
+    // ─────────────────────────────────────────────
+    // CLIENTE ACTIVO
+    // ─────────────────────────────────────────────
+    var CLIENTE_ID = 'TW-FALGO';
+
+    // ─────────────────────────────────────────────
+    // Config por plataforma
+    // ─────────────────────────────────────────────
+    var PLATFORM_CONFIG = {
+      ig: {
+        tab:      'instagram',
+        eyebrow:  '// REPORTE MENSUAL · INSTAGRAM',
+        handle:   '@multiservicios_falgo',
+        links: [
+          { label: 'INSTAGRAM', url: 'https://www.instagram.com/multiservicios_falgo/' }
+        ],
+        s1label: 'SEGUIDORES',
+        s2label: 'ALCANCE',
+        s3label: 'IMPRESIONES',
+        s4label: 'ENGAGEMENT',
+        k1label: 'INTERACCIONES',
+        k2label: 'VISITAS AL PERFIL',
+        k3label: 'CLICS EN BIO',
+        k4label: 'REPRODUCCIONES',
+        chartLabel: '// ALCANCE SEMANAL'
+      },
+      fb: {
+        tab:      'facebook',
+        eyebrow:  '// REPORTE MENSUAL · FACEBOOK',
+        handle:   'Multiservicios Falgo',
+        links: [
+          { label: 'FACEBOOK', url: 'https://www.facebook.com/profile.php?id=61573615763199' }
+        ],
+        s1label: 'SEGUIDORES',
+        s2label: 'ALCANCE',
+        s3label: 'IMPRESIONES',
+        s4label: 'INTERACCIONES',
+        k1label: 'NUEVOS FANS',
+        k2label: 'ALCANCE ORGÁNICO',
+        k3label: 'CLICS EN PÁGINA',
+        k4label: 'PUBLICACIONES',
+        chartLabel: '// VISITAS SEMANALES'
+      }
+    };
+
+    // ─────────────────────────────────────────────
+    // Detectar plataforma desde URL ?p=ig o ?p=fb
+    // ─────────────────────────────────────────────
+    var params   = new URLSearchParams(window.location.search);
+    var platform = params.get('p') || 'ig';
+    var cfg      = PLATFORM_CONFIG[platform] || PLATFORM_CONFIG.ig;
+
+    // Aplicar config estática
+    document.getElementById('rEyebrow').textContent  = cfg.eyebrow;
+    document.getElementById('rHandle').textContent   = cfg.handle;
+    document.getElementById('s1label').textContent   = cfg.s1label;
+    document.getElementById('s2label').textContent   = cfg.s2label;
+    document.getElementById('s3label').textContent   = cfg.s3label;
+    document.getElementById('s4label').textContent   = cfg.s4label;
+    document.getElementById('k1label').textContent   = cfg.k1label;
+    document.getElementById('k2label').textContent   = cfg.k2label;
+    document.getElementById('k3label').textContent   = cfg.k3label;
+    document.getElementById('k4label').textContent   = cfg.k4label;
+    document.getElementById('chartLabel').textContent = cfg.chartLabel;
+
+    // Links footer
+    var linksEl = document.getElementById('rFooterLinks');
+    cfg.links.forEach(function(l) {
+      var a = document.createElement('a');
+      a.href = l.url; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = l.label;
+      linksEl.appendChild(a);
+    });
+
+    // ─────────────────────────────────────────────
+    // Fetch desde Google Sheets
+    // ─────────────────────────────────────────────
+    function deltaClass(val) {
+      if (!val) return 'neu';
+      var s = String(val).trim();
+      if (s.charAt(0) === '+') return 'up';
+      if (s.charAt(0) === '-') return 'down';
+      return 'neu';
+    }
+
+    function setDelta(id, val) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent  = val || '--';
+      el.className    = 'sum-delta ' + deltaClass(val);
+    }
+
+    function setKpiDelta(id, val) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent  = val || '--';
+      el.className    = 'kpi-delta ' + deltaClass(val);
+    }
+
+    function animateBars(d) {
+      var vals = [
+        parseFloat(String(d.s1 || '0').replace(/,/g, '')),
+        parseFloat(String(d.s2 || '0').replace(/,/g, '')),
+        parseFloat(String(d.s3 || '0').replace(/,/g, '')),
+        parseFloat(String(d.s4 || '0').replace(/,/g, ''))
+      ];
+      var max = Math.max.apply(null, vals) || 1;
+      ['b1','b2','b3','b4'].forEach(function(id, i) {
+        var el = document.getElementById(id);
+        if (el) {
+          var pct = (vals[i] / max) * 100;
+          if (pct >= 98) el.classList.add('hi'); else el.classList.remove('hi');
+          requestAnimationFrame(function() { el.style.height = pct + '%'; });
+        }
+      });
+    }
+
+    function updateDonut(n1, n2, n3) {
+      var total = (n1 + n2 + n3) || 1;
+      var circ  = 2 * Math.PI * 38; // 238.76
+      var p1    = (n1 / total) * circ;
+      var p2    = (n2 / total) * circ;
+      var p3    = (n3 / total) * circ;
+      var gap   = 4;
+
+      // Segment 1
+      var d1 = document.getElementById('donut1');
+      d1.setAttribute('stroke-dasharray', (p1 - gap) + ' ' + (circ - p1 + gap));
+      d1.setAttribute('stroke-dashoffset', circ * 0.25);
+
+      // Segment 2
+      var offset2 = circ * 0.25 - p1;
+      var d2 = document.getElementById('donut2');
+      d2.setAttribute('stroke-dasharray', (p2 - gap) + ' ' + (circ - p2 + gap));
+      d2.setAttribute('stroke-dashoffset', offset2);
+
+      // Segment 3
+      var offset3 = offset2 - p2;
+      var d3 = document.getElementById('donut3');
+      d3.setAttribute('stroke-dasharray', (p3 - gap) + ' ' + (circ - p3 + gap));
+      d3.setAttribute('stroke-dashoffset', offset3);
+    }
+
+    function populate(d) {
+      // Header
+      var mes = d.mes || '';
+      document.getElementById('rPeriod').textContent  = mes ? '01 — 30 ' + mes.toUpperCase() : '--';
+      document.getElementById('rFooterBrand').textContent = 'TWISTED MEDIA · REPORTE ' + mes.toUpperCase();
+
+      // Summary bar
+      document.getElementById('s1val').textContent   = d.seguidores   || '--';
+      document.getElementById('s2val').textContent   = d.alcance      || '--';
+      document.getElementById('s3val').textContent   = d.impresiones  || '--';
+      document.getElementById('s4val').textContent   = d.engagement   || '--';
+      document.getElementById('sPubs').textContent   = d.publicaciones || '--';
+      setDelta('s1delta', d.seguidores_delta);
+      setDelta('s2delta', d.alcance_delta);
+      setDelta('s3delta', d.impresiones_delta);
+      setDelta('s4delta', d.engagement_delta);
+
+      // KPIs
+      document.getElementById('k1val').textContent = d.interacciones  || '--';
+      document.getElementById('k2val').textContent = d.visitas_perfil || '--';
+      document.getElementById('k3val').textContent = d.clics_bio      || '--';
+      document.getElementById('k4val').textContent = d.reels_reprod   || d.publicaciones || '--';
+      setKpiDelta('k1delta', d.interacciones_delta);
+      setKpiDelta('k2delta', d.visitas_delta);
+      setKpiDelta('k3delta', d.clics_delta);
+      setKpiDelta('k4delta', d.reels_reprod_delta || '');
+
+      // Bars
+      animateBars(d);
+
+      // Donut
+      var n1 = parseInt(d.tipo1_num) || 0;
+      var n2 = parseInt(d.tipo2_num) || 0;
+      var n3 = parseInt(d.tipo3_num) || 0;
+      document.getElementById('t1name').textContent = d.tipo1 || '--';
+      document.getElementById('t2name').textContent = d.tipo2 || '--';
+      document.getElementById('t3name').textContent = d.tipo3 || '--';
+      document.getElementById('t1num').textContent  = n1 || '--';
+      document.getElementById('t2num').textContent  = n2 || '--';
+      document.getElementById('t3num').textContent  = n3 || '--';
+      updateDonut(n1, n2, n3);
+
+      // Posts
+      document.getElementById('p1alcance').textContent   = d.post1_alcance || '--';
+      document.getElementById('p1likes').textContent     = d.post1_likes   || '--';
+      document.getElementById('p1extra').textContent     = d.post1_extra   || '--';
+      document.getElementById('p1extralabel').textContent = d.post1_extra_label || 'REPROD.';
+      document.getElementById('p2alcance').textContent   = d.post2_alcance || '--';
+      document.getElementById('p2likes').textContent     = d.post2_likes   || '--';
+      document.getElementById('p2extra').textContent     = d.post2_extra   || '--';
+      document.getElementById('p2extralabel').textContent = d.post2_extra_label || 'GUARDADOS';
+      document.getElementById('p3alcance').textContent   = d.post3_alcance || '--';
+      document.getElementById('p3likes').textContent     = d.post3_likes   || '--';
+      document.getElementById('p3extra').textContent     = d.post3_extra   || '--';
+      document.getElementById('p3extralabel').textContent = d.post3_extra_label || 'GUARDADOS';
+
+      // Notas
+      document.getElementById('nota1').textContent = d.nota1 || '--';
+      document.getElementById('nota2').textContent = d.nota2 || '--';
+      document.getElementById('nota3').textContent = d.nota3 || '--';
+      document.getElementById('nota4').textContent = d.nota4 || '--';
+
+      // Análisis
+      generateAnalysis(d);
+    }
+
+    function showReport(d) {
+      document.getElementById('loadingState').style.display  = 'none';
+      document.getElementById('reportContent').style.display = 'block';
+      populate(d);
+    }
+
+    function showError() {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display   = 'flex';
+    }
+
+    function generateAnalysis(d) {
+      var grid = document.getElementById('analysisGrid');
+      if (!grid) return;
+
+      var insights = [];
+
+      // ── 1. ALCANCE ──
+      var alcanceDelta = parseFloat(String(d.alcance_delta || '0').replace('%','').replace('+',''));
+      var alcanceTexto = '';
+      if (alcanceDelta >= 100) {
+        alcanceTexto = 'Crecimiento <strong>excepcional</strong> — tu contenido está siendo amplificado activamente por el algoritmo hacia audiencias nuevas. Mantén la frecuencia de publicación para sostenerlo.';
+      } else if (alcanceDelta >= 30) {
+        alcanceTexto = 'Crecimiento <strong>sólido</strong> — la estrategia de contenido está funcionando. El algoritmo está distribuyendo tus publicaciones más allá de tus seguidores actuales.';
+      } else if (alcanceDelta > 0) {
+        alcanceTexto = 'Crecimiento <strong>estable</strong> — el alcance sube de forma consistente. Para acelerar, experimenta con contenido en video corto o aumenta la frecuencia de publicación.';
+      } else {
+        alcanceTexto = 'El alcance <strong>bajó este mes</strong> — revisar horarios de publicación, formato de contenido y consistencia en la frecuencia semanal.';
+      }
+      insights.push({ tag: 'ALCANCE', score: d.alcance_delta || '--', scoreClass: alcanceDelta >= 0 ? 'up' : 'down', text: alcanceTexto });
+
+      // ── 2. AUDIENCIA ──
+      var seguidores = parseInt(String(d.seguidores || '0').replace(/,/g,'')) || 0;
+      var audienciaTexto = '';
+      if (seguidores >= 100) {
+        audienciaTexto = 'Ganaste <strong>' + d.seguidores + ' nuevos seguidores</strong> este período — una base en construcción activa. Cada seguidor nuevo es un cliente potencial que eligió ver tu contenido.';
+      } else if (seguidores >= 30) {
+        audienciaTexto = 'La cuenta suma <strong>' + d.seguidores + ' seguidores nuevos</strong>. El crecimiento es consistente para una cuenta en etapa de arranque. La constancia mensual acumulará un impacto real.';
+      } else {
+        audienciaTexto = 'El crecimiento de seguidores es gradual con <strong>' + d.seguidores + ' nuevos</strong>. Enfocarse en contenido local y de valor agregado para acelerar la conversión de visitantes en seguidores.';
+      }
+      insights.push({ tag: 'AUDIENCIA', score: '+' + d.seguidores, scoreClass: 'up', text: audienciaTexto });
+
+      // ── 3. CONTENIDO ──
+      var tipo1num = parseInt(d.tipo1_num) || 0;
+      var tipo1nom = d.tipo1 || 'VIDEO';
+      var contenidoTexto = '';
+      if (tipo1num > 0) {
+        contenidoTexto = 'El formato <strong>' + tipo1nom + '</strong> fue el más publicado con ' + tipo1num + ' piezas. ' +
+          (d.post1_alcance ? 'La publicación con mayor alcance llegó a <strong>' + d.post1_alcance + ' personas</strong> — replica ese tipo de contenido las próximas semanas.' : 'Identifica qué publicación tuvo mejor respuesta y replica ese formato.');
+      } else {
+        contenidoTexto = 'Diversificar entre <strong>video, imagen y carrusel</strong> permite al algoritmo identificar qué formato prefiere tu audiencia. Se recomienda al menos 1 reel por semana.';
+      }
+      insights.push({ tag: 'CONTENIDO', score: d.publicaciones ? d.publicaciones + ' posts' : '--', scoreClass: 'neu', text: contenidoTexto });
+
+      // ── 4. CONVERSIÓN ──
+      var contactos = parseInt(String(d.clics_bio || '0').replace(/,/g,'')) || 0;
+      var visitas   = parseInt(String(d.visitas_perfil || '0').replace(/,/g,'')) || 1;
+      var tasa      = visitas > 0 ? ((contactos / visitas) * 100).toFixed(1) : '0';
+      var convTexto = '';
+      if (contactos >= 10) {
+        convTexto = '<strong>' + contactos + ' personas iniciaron contacto directo</strong> desde el perfil — estas son las oportunidades más calientes del mes. Dar seguimiento rápido aumenta significativamente la tasa de cierre.';
+      } else if (contactos >= 3) {
+        convTexto = '<strong>' + contactos + ' contactos directos</strong> recibidos (' + tasa + '% de las visitas al perfil). Agregar un CTA más claro en la bio y en las publicaciones puede aumentar este número.';
+      } else {
+        convTexto = 'El número de contactos directos es bajo respecto a las visitas. Se recomienda incluir una <strong>llamada a la acción explícita</strong> en cada publicación ("Escríbenos por WhatsApp").';
+      }
+      insights.push({ tag: 'CONVERSIÓN', score: contactos + ' leads', scoreClass: contactos >= 5 ? 'up' : 'neu', text: convTexto });
+
+      // Renderizar
+      grid.innerHTML = insights.map(function(ins) {
+        return '<div class="insight-card">' +
+          '<div class="insight-header">' +
+            '<span class="insight-tag">' + ins.tag + '</span>' +
+            '<span class="insight-score ' + ins.scoreClass + '">' + ins.score + '</span>' +
+          '</div>' +
+          '<p class="insight-text">' + ins.text + '</p>' +
+        '</div>';
+      }).join('');
+    }
+
+    function fetchSheet() {
+      try {
+        if (!TM_DATOS[CLIENTE_ID]) { showError(); return; }
+        var data = TM_DATOS[CLIENTE_ID][platform];
+        if (!data || !data.mes) { showError(); return; }
+        showReport(data);
+      } catch(e) {
+        showError();
+      }
+    }
+
+    fetchSheet();
+  </script>
+
+</body>
+</html>
